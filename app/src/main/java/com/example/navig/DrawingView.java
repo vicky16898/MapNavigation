@@ -1,10 +1,13 @@
 package com.example.navig;
 
+import android.app.Activity;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Rect;
 import android.graphics.drawable.BitmapDrawable;
+import android.util.AttributeSet;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
@@ -13,6 +16,7 @@ public class DrawingView extends View implements Runnable {
     public int height;
     public int width;
     public float density;
+    public Thread thread = null;
     public boolean isTouch = false;
     Bitmap bitmap = null;
     int scaleX = 0, scaleY = 0;
@@ -20,22 +24,32 @@ public class DrawingView extends View implements Runnable {
     float scaleFactor = 1f;
     float dSCF = 0.2f;
 
-    public DrawingView(Context context, int height, int width, float density) {
-        super(context);
-        this.height = height;
-        this.width = width;
-        this.density = density;
-        init();
+
+
+    public DrawingView(Context context, AttributeSet attributeSet)
+    {
+        super(context, attributeSet);
+        init(context);
+
     }
 
-    public void init()
+    public void init(Context context)
     {
+        DisplayMetrics displayMetrics = new DisplayMetrics();
+        ((Activity)context).getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+        height = displayMetrics.heightPixels;
+        width = displayMetrics.widthPixels;
+        density = displayMetrics.density;
         Bitmap.Config conf = Bitmap.Config.ARGB_8888;
         bitmap = Bitmap.createBitmap(width, height, conf);
         Canvas canvas = new Canvas(bitmap);
         Bitmap map = ((BitmapDrawable)getResources().getDrawable(R.drawable.map)).getBitmap();
         map = Bitmap.createScaledBitmap(map, (int)(500f*density), (int)(500f*density), false);
         canvas.drawBitmap(map, new Rect(0, 0, map.getWidth(), map.getHeight()), new Rect(0, 0, width, height) , null);
+        thread = new Thread(this);
+        thread.start();
+
+
     }
 
     @Override
